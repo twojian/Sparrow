@@ -1,0 +1,85 @@
+{
+ "args": {
+  "data": "<repo>\\repro\\work\\data",
+  "cache": "<repo>\\repro\\work\\cache",
+  "judges": "<repo>\\repro\\work\\judges",
+  "out": "<repo>\\repro\\work\\runs\\abl_a3m",
+  "tasks": [
+   "t2i"
+  ],
+  "eval_tasks": [
+   "t2i"
+  ],
+  "init": null,
+  "steps": 500,
+  "dim": 384,
+  "depth": 8,
+  "heads": 6,
+  "bs": 128,
+  "bs_vid": 128,
+  "lr": 0.0006,
+  "ema": 0.999,
+  "cfg": 3.0,
+  "precision": "bf16",
+  "grad_accum": 4,
+  "aud_split": 4,
+  "vid_attn": "full",
+  "weights": {
+   "t2a": 4.0
+  },
+  "eval_every": 0,
+  "eval_only": false
+ },
+ "params_M": 16.04,
+ "seq_len": {
+  "t2i": 68,
+  "t2a": 107,
+  "t2v": 325,
+  "i2t": 22,
+  "a2t": 31,
+  "v2t": 71,
+  "a2i": 94
+ },
+ "load_seconds": 3.0,
+ "train_seconds": 361.1,
+ "log": [
+  {
+   "step": 0,
+   "sec": 1.3,
+   "t2i": 1.9976
+  },
+  {
+   "step": 100,
+   "sec": 65.8,
+   "t2i": 1.8818
+  },
+  {
+   "step": 200,
+   "sec": 138.0,
+   "t2i": 1.7701
+  },
+  {
+   "step": 300,
+   "sec": 212.1,
+   "t2i": 1.6506
+  },
+  {
+   "step": 400,
+   "sec": 285.5,
+   "t2i": 1.5677
+  }
+ ],
+ "train_peak_mem_GB": 1.69,
+ "eval": {
+  "t2i": {
+   "n": 384,
+   "animal_acc": 0.2604166865348816,
+   "color_acc": 0.109375,
+   "both_acc": 0.0364583358168602,
+   "nn_dist_gen_mean": 5807.4189453125,
+   "nn_dist_test_mean": 2200.677978515625
+  }
+ },
+ "eval_seconds": 357.1,
+ "eval_peak_mem_GB": 2.39
+}

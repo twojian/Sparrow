@@ -1,0 +1,10 @@
+{
+ "what": "vid",
+ "steps": 1500,
+ "seconds": 1608.5,
+ "params_M": 0.685,
+ "peak_mem_GB": 5.28,
+ "animal_acc": 1.0,
+ "color_acc": 1.0,
+ "action_acc": 1.0
+}

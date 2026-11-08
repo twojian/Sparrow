@@ -1,0 +1,9 @@
+{
+ "what": "img",
+ "steps": 2000,
+ "seconds": 1011.9,
+ "params_M": 0.585,
+ "peak_mem_GB": 7.56,
+ "animal_acc": 1.0,
+ "color_acc": 1.0
+}

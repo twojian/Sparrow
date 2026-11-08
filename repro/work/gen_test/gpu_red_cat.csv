@@ -1,0 +1,2 @@
+ERROR: Option --query-gpu=memory.used,temperature.gpu,clocks.sm,power.draw is not recognized. Please run 'nvidia-smi -h' for help.
+

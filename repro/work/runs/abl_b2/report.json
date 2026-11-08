@@ -1,0 +1,28 @@
+{
+ "run": "abl_b2",
+ "status": "incomplete",
+ "completed": false,
+ "args": null,
+ "params_M": null,
+ "seq_len": null,
+ "load_seconds": null,
+ "train_seconds": null,
+ "log": [
+  {
+   "step": 0,
+   "sec": 4.5,
+   "t2i": 1.9976
+  },
+  {
+   "step": 100,
+   "sec": 300.4,
+   "t2i": 1.4119
+  }
+ ],
+ "train_peak_mem_GB": null,
+ "eval": null,
+ "eval_seconds": null,
+ "eval_peak_mem_GB": null,
+ "checkpoint": null,
+ "note": "目录内只有一份 87 字节的 train.log(2 行),没有启动参数、没有评测输出、没有 final.pt 或 step*.pt;日志停在 step 100 后中断,按未完成记录。除 log 里的 step/sec/t2i 外其余字段均无据可依,一律置 null。"
+}

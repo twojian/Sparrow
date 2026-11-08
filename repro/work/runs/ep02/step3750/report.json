@@ -1,0 +1,14 @@
+{
+ "step": 3750,
+ "eval": {
+  "t2i": {
+   "n": 384,
+   "animal_acc": 1.0,
+   "color_acc": 1.0,
+   "both_acc": 1.0,
+   "nn_dist_gen_mean": 2958.9091796875,
+   "nn_dist_test_mean": 2200.677978515625
+  }
+ },
+ "eval_seconds": 88.4
+}

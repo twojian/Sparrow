@@ -1,0 +1,160 @@
+{
+ "args": {
+  "data": "<repo>\\repro\\work\\data",
+  "cache": "<repo>\\repro\\work\\cache",
+  "judges": "<repo>\\repro\\work\\judges",
+  "out": "<repo>\\repro\\work\\runs\\abl_a3",
+  "tasks": [
+   "t2i"
+  ],
+  "eval_tasks": [
+   "t2i"
+  ],
+  "init": null,
+  "steps": 2000,
+  "dim": 384,
+  "depth": 8,
+  "heads": 6,
+  "bs": 128,
+  "bs_vid": 128,
+  "lr": 0.0006,
+  "ema": 0.999,
+  "cfg": 3.0,
+  "precision": "bf16",
+  "grad_accum": 4,
+  "aud_split": 4,
+  "vid_attn": "full",
+  "weights": {
+   "t2a": 4.0
+  },
+  "eval_every": 500,
+  "eval_only": false
+ },
+ "params_M": 16.04,
+ "seq_len": {
+  "t2i": 68,
+  "t2a": 107,
+  "t2v": 325,
+  "i2t": 22,
+  "a2t": 31,
+  "v2t": 71,
+  "a2i": 94
+ },
+ "load_seconds": 3.0,
+ "train_seconds": 1472.3,
+ "log": [
+  {
+   "step": 0,
+   "sec": 1.2,
+   "t2i": 1.9976
+  },
+  {
+   "step": 100,
+   "sec": 63.5,
+   "t2i": 1.878
+  },
+  {
+   "step": 200,
+   "sec": 132.8,
+   "t2i": 1.7525
+  },
+  {
+   "step": 300,
+   "sec": 203.4,
+   "t2i": 1.5835
+  },
+  {
+   "step": 400,
+   "sec": 276.5,
+   "t2i": 1.4012
+  },
+  {
+   "step": 500,
+   "sec": 352.2,
+   "t2i": 1.1964
+  },
+  {
+   "step": 600,
+   "sec": 422.3,
+   "t2i": 1.0735
+  },
+  {
+   "step": 700,
+   "sec": 494.1,
+   "t2i": 0.9574
+  },
+  {
+   "step": 800,
+   "sec": 568.8,
+   "t2i": 0.8853
+  },
+  {
+   "step": 900,
+   "sec": 645.8,
+   "t2i": 0.8679
+  },
+  {
+   "step": 1000,
+   "sec": 719.5,
+   "t2i": 0.8311
+  },
+  {
+   "step": 1100,
+   "sec": 794.2,
+   "t2i": 0.8137
+  },
+  {
+   "step": 1200,
+   "sec": 870.3,
+   "t2i": 0.8209
+  },
+  {
+   "step": 1300,
+   "sec": 948.2,
+   "t2i": 0.813
+  },
+  {
+   "step": 1400,
+   "sec": 1024.9,
+   "t2i": 0.7915
+  },
+  {
+   "step": 1500,
+   "sec": 1098.3,
+   "t2i": 0.7718
+  },
+  {
+   "step": 1600,
+   "sec": 1172.4,
+   "t2i": 0.7495
+  },
+  {
+   "step": 1700,
+   "sec": 1248.7,
+   "t2i": 0.7227
+  },
+  {
+   "step": 1800,
+   "sec": 1322.0,
+   "t2i": 0.7048
+  },
+  {
+   "step": 1900,
+   "sec": 1397.6,
+   "t2i": 0.7206
+  }
+ ],
+ "train_peak_mem_GB": 2.66,
+ "eval": {
+  "t2i": {
+   "n": 384,
+   "animal_acc": 0.734375,
+   "color_acc": 0.9921875,
+   "both_acc": 0.7265625,
+   "nn_dist_gen_mean": 5083.765625,
+   "nn_dist_test_mean": 2200.677978515625
+  }
+ },
+ "eval_seconds": 66.7,
+ "eval_peak_mem_GB": 2.39
+}

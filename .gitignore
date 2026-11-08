@@ -1,0 +1,55 @@
+# ============================================================
+# 白名单式:顶层先全忽略,再按需放行。
+# 放行目录内部另按大件规则忽略;带 ! 的例外必须放在所有忽略规则之后。
+# ============================================================
+
+/*
+!/.gitignore
+!/README.md
+!/LICENSE
+!/code/
+!/repro/
+
+# 本机环境与第三方权重目录(顶层已被 /* 挡住,这里保留作双保险)
+/.venv-sparrow/
+
+# 大件:数据、缓存、权重与张量文件一律不入库
+*.npz
+*.pt
+*.safetensors
+*.ckpt
+/repro/work/data/
+/repro/work/cache/
+
+# 早期中间记录目录:文件留在本机,不随仓库分发
+/repro/patches/
+
+# Python 运行残留
+__pycache__/
+*.pyc
+
+# 训练产物:逐步快照与样例图不入库;report.json 由文末例外放行
+# 注意:不要整体忽略 /repro/work/runs/,否则后面的 ! 例外救不回来
+/repro/work/runs/**/step*/*
+/repro/work/runs/**/samples/
+
+# 训练日志:训练曲线已完整保存在 report.json 的 log 字段
+# 用 train* 覆盖 train.log / train20.log / train_abort100.log 这类命名变体
+/repro/work/runs/**/train*.log
+# 探针脚本的控制台日志(探针脚本本身由文末例外放行,.log 不入库)
+/repro/work/tmp/*.log
+
+# ============================================================
+# 例外:必须保留的文件。必须放在所有忽略规则之后,否则不生效
+# ============================================================
+
+# 评测文本结果(run 根目录与各 step 目录下的 report.json)
+!/repro/work/runs/**/report.json
+
+# 冒烟测试的小图(6 张,约 60 KB)
+!/repro/work/gen_test/*.png
+
+# 一次性探针脚本与中间表
+!/repro/work/tmp/*.py
+!/repro/work/tmp/*.csv
+!/repro/work/tmp/*.json

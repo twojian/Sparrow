@@ -1,0 +1,12 @@
+{
+ "cmd": "<venv>\\Scripts\\python.exe -u <code_dir>\\t2i\\code\\sparrow.py --data <repo>\\repro\\work\\data --cache <repo>\\repro\\work\\cache --judges <repo>\\repro\\work\\judges --out <repo>\\repro\\work\\runs\\abl_b2_cool --tasks t2i --steps 500 --bs 128 --precision fp16",
+ "start_temp": 57,
+ "end_temp": 75,
+ "peak_temp": 80,
+ "max_throttle_mask": "0x0000000000000020",
+ "fuse_terminated": false,
+ "exit_code": 0,
+ "wall_seconds": 1310.3,
+ "t_start": 1793936561.0255277,
+ "t_end": 1793937871.2826507
+}
