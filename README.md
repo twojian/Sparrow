@@ -149,14 +149,16 @@ repro/
   t2i-实现与进度.md         关键设计取舍、实施状态与后续计划
   docs/                     复现文档（环境 / 数据与缓存 / t2i 训练与评测 /
                             评测侧优化 / 消融 / t2a 训练准备）
+    assets/                 文档引用的出图（8 张 PNG，入库）
   requirements-lock.txt     依赖锁定
   work/
     data/                   原始数据（world_*.npz、voice.npz），不入库
-    cache/                  编码缓存（img.npz、labels.npz），不入库
+    cache/                  编码缓存（img.npz、labels.npz、encode.json），不入库
     judges/                 判卷器权重，不入库
     runs/                   训练产物：report.json 入库，权重与逐步快照不入库
     gen_test/               链路验证出图（6 张小图，入库）
     tmp/                    一次性探针脚本与中间表（入库）
+  patches/                  本地补丁留档（显式忽略，不入库）
 ```
 
 仓库内包含 t2i 链路验证的代码、文档与小结果；训练权重不入库，可用 `code/t2i/README.md` 的第 4 步从零训练得到。
