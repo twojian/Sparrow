@@ -21,7 +21,7 @@
 /repro/work/cache/
 
 # 早期中间记录目录:文件留在本机,不随仓库分发
-/repro/patches/
+/repro/local-edits/
 
 # 本机遥测(温度 / SM 时钟 / 功耗 / 降频掩码)与探针中间表:只留本机,不随仓库分发
 /repro/work/tmp/*.csv
