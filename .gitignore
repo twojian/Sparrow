@@ -23,6 +23,10 @@
 # 早期中间记录目录:文件留在本机,不随仓库分发
 /repro/patches/
 
+# 本机遥测(温度 / SM 时钟 / 功耗 / 降频掩码)与探针中间表:只留本机,不随仓库分发
+/repro/work/tmp/*.csv
+/repro/work/tmp/*.json
+
 # Python 运行残留
 __pycache__/
 *.pyc
@@ -48,7 +52,5 @@ __pycache__/
 # 冒烟测试的小图(6 张,约 60 KB)
 !/repro/work/gen_test/*.png
 
-# 一次性探针脚本与中间表
+# 一次性探针脚本(脚本入库;它产出的遥测表与结果 JSON 已在上面忽略)
 !/repro/work/tmp/*.py
-!/repro/work/tmp/*.csv
-!/repro/work/tmp/*.json

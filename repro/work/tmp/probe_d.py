@@ -1,4 +1,4 @@
-"""D 轴探针:torch.compile 在 Windows+sm75 的可用性、channels_last 是否有收益。
+"""D 轴探针:torch.compile 在 Windows + 无张量核显卡上的可用性、channels_last 是否有收益。
 只做前向/反向微基准,不训练、不写报告。"""
 import json
 import sys

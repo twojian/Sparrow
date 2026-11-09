@@ -2,23 +2,23 @@
 
 架构照 Transfusion / BAGEL 的路子,规模缩到单卡三小时:
   - 文字和各模态的向量排成一条序列,进同一个主干;文字只看前面(因果),同一段模态内部互相都看得见。
-  - 文字出口:预测下一个词。生成出口:流匹配(z_t=(1-t)·噪声+t·数据,学速度 v=数据-噪声,和第 1 讲同一套)。
+  - 文字出口:预测下一个词。生成出口:流匹配(z_t=(1-t)·噪声+t·数据,学速度 v=数据-噪声)。
   - 生成走 VAE / 音频编解码器的潜空间,理解走另一套编码器(SigLIP2、Whisper)+ 小投影层——
     「理解」和「生成」用不同的编码器,和 Janus、BAGEL、Qwen-Omni 一样。冻结零件见 frozen.py,训练前已缓存。
 
 七种序列(* 是要预测的答案词,[] 是一段模态向量):
   文字→图   <bos> 颜色 动物 <img> [FLUX.2 潜变量 8x8=64,加噪]
   文字→声音 <bos> 动物 <aud> [Mimi 潜变量 26 帧 x 4,加噪]
-  文字→视频 <bos> 颜色 动物 动作 <vid> [Wan 潜变量 5 帧 x 64,加噪]
+  文字→视频 <bos> 颜色 动物 动作 <vid> [Wan 潜变量 5 个时间槽 x 64(覆盖 16 帧),加噪]
   看图      <bos> <img> [SigLIP 16] </img> 颜色* 动物* <eos>*
   听声      <bos> <aud> [Whisper 26] </aud> 动物* <eos>*
   看视频    <bos> <vid> [SigLIP 16 帧 x 4] </vid> 颜色* 动物* 动作* <eos>*
   听→画    <bos> <aud> [Whisper 26] </aud> <img> [FLUX.2 潜变量,加噪]
 
-  python sparrow.py --data D --cache C --judges J --out O [--tasks t2i,t2a,...] [--steps N] [--init 上一集/final.pt]
+  python sparrow.py --data D --cache C --judges J --out O [--tasks t2i,t2a,...] [--steps N] [--init 上一次的/final.pt]
 训练完自动评测、导出样例,写 O/report.json;只留最终权重 O/final.pt(含归一化统计量,infer.py 直接能用)。
 --init 从已有权重接着往下训(后续阶段在此基础上增加能力);--eval_tasks 评测哪些本事(默认同 --tasks,可以多评几样量「忘没忘」);
---eval_every N 训练中途每 N 步也评测一次(写 O/step<N>/);--vid_attn frame 让视频每帧只看自己(对照)。
+--eval_every N 训练中途每 N 步也评测一次(写 O/step<N>/);--vid_attn frame 让视频每个时间槽只看自己这一段(对照)。
 --eval_only 读 O/final.pt 重新评测,只替换 report.json 里的评测部分(训练参数、耗时、日志照旧)。
 """
 import argparse
@@ -67,7 +67,7 @@ def needs(tasks):
 
 class Layout:
     """一种序列的静态结构:哪几段是文字、哪几段是模态、谁能看见谁。
-    frame=True:视频段里每帧只看自己这一帧(和前面的文字),帧与帧之间互相看不见。"""
+    frame=True:视频段里每个时间槽只看自己这一段(和前面的文字),时间槽之间互相看不见。"""
 
     def __init__(self, task, frame=False):
         self.task, self.pieces, tok, seg, block, answer, slots = task, [], [], [], [], [], {}
@@ -102,7 +102,7 @@ class Layout:
         b, p = torch.tensor(block, device=dev), torch.tensor(seg, device=dev)
         i = torch.arange(self.L, device=dev)
         same = lambda x: (x[:, None] == x[None, :]) & (x[:, None] >= 0)  # noqa: E731
-        # 文字只看前面;同一块(整段模态,或 frame 时的一帧)互相都看得见;同一段模态里不同块互相看不见
+        # 文字只看前面;同一块(整段模态,或 frame 时的一个时间槽)互相都看得见;同一段模态里不同块互相看不见
         self.mask = ((i[None, :] <= i[:, None]) & ~same(p)) | same(b)
 
 
@@ -441,7 +441,7 @@ def evaluate(a, model, data, lays, out):
     ids = lambda table, idx: table.to(dev)[idx]  # noqa: E731
     acc = lambda ok: ok.float().mean().item()  # noqa: E731
     big = lambda u8, s=4: Image.fromarray(np.asarray(u8.cpu() if torch.is_tensor(u8) else u8)).resize((64 * s, 64 * s), Image.NEAREST)  # noqa: E731
-    word = lambda i: VOCAB[int(i)].replace("/", "")  # noqa: E731  没训过的模型会说出 </img> 之类,斜杠不能进文件名
+    word = lambda i: "".join(c for c in VOCAB[int(i)] if c not in '<>:"/\\|?*') or f"tok{int(i)}"  # noqa: E731  文件名里不能有斜杠、尖括号等
     img_vae = frozen.ImageVAE() if tasks & {"t2i", "a2i"} else None
     vid_vae = frozen.VideoVAE() if "t2v" in tasks else None
     voice = frozen.Voice() if "t2a" in tasks else None
@@ -552,8 +552,8 @@ def main():
     ap.add_argument("--judges", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--tasks", default=",".join(TASKS))
-    ap.add_argument("--eval_tasks", default="", help="评测哪些本事;不写就是 --tasks")
-    ap.add_argument("--init", help="从这份 final.pt 的权重接着训(上一集);dim/depth/heads/aud_split 须一致")
+    ap.add_argument("--eval_tasks", default=None, help="评测哪些本事;不写就是 --tasks(--eval_only 时沿用 final.pt 里记的)")
+    ap.add_argument("--init", help="从这份 final.pt 的权重接着训(上一次的权重);dim/depth/heads/aud_split 须一致")
     ap.add_argument("--steps", type=int, default=24000)
     ap.add_argument("--dim", type=int, default=384)
     ap.add_argument("--depth", type=int, default=8)
@@ -565,33 +565,53 @@ def main():
     ap.add_argument("--cfg", type=float, default=3.0)
     ap.add_argument("--precision", default="bf16", choices=["bf16", "fp32", "fp16"], help="训练精度;默认 bf16")
     ap.add_argument("--grad_accum", type=int, default=1, help="梯度累积微步数;1=每步更新(默认,与原行为一致)")
-    ap.add_argument("--aud_split", type=int, default=4, help="每个 Mimi 帧(512 维)拆成几个向量进主干")
-    ap.add_argument("--vid_attn", default="full", choices=["full", "frame"], help="视频段内:各帧互相看得见 / 每帧只看自己")
+    ap.add_argument("--aud_split", type=int, default=4, choices=[1, 2, 4, 8], help="每个 Mimi 帧(512 维)拆成几个向量进主干")
+    ap.add_argument("--vid_attn", default="full", choices=["full", "frame"], help="视频段内:各时间槽互相看得见 / 每个时间槽只看自己这一段")
     ap.add_argument("--weights", default="t2a=4", help="各任务损失的权重;没写的都是 1")
     ap.add_argument("--eval_every", type=int, default=0, help="每训这么多步评测一次(0=只在最后评测)")
     ap.add_argument("--eval_only", action="store_true")
     a = ap.parse_args()
     a.tasks = a.tasks.split(",")
-    a.eval_tasks = a.eval_tasks.split(",") if a.eval_tasks else a.tasks
+    a.eval_tasks = a.eval_tasks.split(",") if a.eval_tasks else None
     a.weights = {k: float(v) for k, v in (x.split("=") for x in a.weights.split(",") if x)}
     os.makedirs(a.out, exist_ok=True)
     torch.manual_seed(0)
     torch.backends.cuda.matmul.allow_tf32 = True
+    ck = None
+    if a.eval_only:                        # 结构、任务都用 final.pt 里记的 args,不再吃 CLI 默认值
+        if not os.path.exists(f"{a.out}/final.pt"):
+            raise SystemExit(f"--eval_only 要读 {a.out}/final.pt,但文件不存在")
+        ck = torch.load(f"{a.out}/final.pt", map_location=dev)
+        saved = ck["args"]
+        for k in ("dim", "depth", "heads", "aud_split", "vid_attn", "tasks"):
+            setattr(a, k, saved[k])
+        if a.eval_tasks is None:
+            a.eval_tasks = saved["eval_tasks"]
+        print(f"--eval_only: 用 final.pt 的配置 dim={a.dim} depth={a.depth} heads={a.heads} "
+              f"aud_split={a.aud_split} tasks={a.tasks} eval_tasks={a.eval_tasks}", flush=True)
+    if a.eval_tasks is None:
+        a.eval_tasks = a.tasks
+    if "t2a" in a.eval_tasks:              # t2a 判分要 asr(及其 funasr 等依赖);缺了在开训前退出,别等训完才炸
+        try:
+            import asr  # noqa: F401
+        except ImportError:
+            raise SystemExit("评测 t2a 需要 asr.py(本仓库未收录)与 funasr/modelscope/librosa/torchaudio/pypinyin;"
+                             "把 asr.py 放进 code/t2i、装好依赖后再跑,或用 --eval_tasks 去掉 t2a。")
     split_audio(a.aud_split)
     t0 = time.time()
     data = Cache(a.cache, needs(a.tasks + a.eval_tasks))
     lays = {t: Layout(t, a.vid_attn == "frame") for t in TASKS}
     model = Sparrow(a.dim, a.depth, a.heads).to(dev)
-    if a.init:
+    if a.init and not a.eval_only:
         ck = torch.load(a.init, map_location=dev)
         bad = {k: (ck["args"][k], vars(a)[k]) for k in ("dim", "depth", "heads", "aud_split") if ck["args"][k] != vars(a)[k]}
         if bad:
-            raise SystemExit(f"--init {a.init} 的结构和这次不一致(上一集, 这次):{bad}")
+            raise SystemExit(f"--init {a.init} 的结构和这次不一致(上一次, 这次):{bad}")
         model.load_state_dict(ck["model"])
     rep = {"args": vars(a), "params_M": round(sum(p.numel() for p in model.parameters()) / 1e6, 2),
            "seq_len": {t: lays[t].L for t in TASKS}, "load_seconds": round(time.time() - t0, 1)}
     if a.eval_only:
-        model.load_state_dict(torch.load(f"{a.out}/final.pt", map_location=dev)["model"])
+        model.load_state_dict(ck["model"])
         rep = json.load(open(f"{a.out}/report.json"))
     else:
         rep["train_seconds"], rep["log"] = train(a, model, data, lays)

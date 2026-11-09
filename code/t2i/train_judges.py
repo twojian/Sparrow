@@ -1,11 +1,12 @@
 """判卷用的两个小分类器:图(动物+颜色)、视频(动物+颜色+动作)。只用真数据训,和主模型无关。
-念名字不用分类器判,用语音识别听写(见 asr.py)。
+念名字不用分类器判,用语音识别听写。
 
   python train_judges.py img|vid --data D --out O [--steps N]
 D 里要有 world_train.npz、world_test.npz;产出 O/judge_<名字>.pt 与 .json(耗时、显存峰值、测试准确率)。
 """
 import argparse
 import json
+import os
 import time
 
 import numpy as np
@@ -29,6 +30,7 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--steps", type=int, default=2000)
     a = ap.parse_args()
+    os.makedirs(a.out, exist_ok=True)
     torch.manual_seed(0)
     t0 = time.time()
     pick = lambda n, bs: torch.randint(0, n, (bs,), device=dev)  # noqa: E731

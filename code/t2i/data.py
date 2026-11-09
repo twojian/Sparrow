@@ -1,9 +1,9 @@
 """把卡通小世界与 TTS 录音整理成训练用的 npz。
 
   python data.py world <out.npz> <图张数> <视频段数> <起始种子>   # 每条样本的种子 = 起始种子 + 序号
-  python data.py voice <wav 目录> <out.npz>                      # speak.py 的产物 -> 24 kHz、统一 2.08 秒(只补尾部静音)
+  python data.py voice <wav 目录> <out.npz>                      # 录音目录 -> 24 kHz、统一 2.08 秒(只补尾部静音)
 
-测试集用另一段种子(见 run.sh),所以测试图一张都没在训练里出现过。
+测试集用另一段种子,所以测试图一张都没在训练里出现过。
 """
 import json
 import os

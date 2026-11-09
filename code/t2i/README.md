@@ -12,12 +12,21 @@
 
 四步按依赖顺序执行：先把数据造出来，再训判卷器（编码与评测都依赖它），然后编码缓存，最后训主模型。
 
-**1) 建数据**（世界图与视频，训练 / 测试用不同种子）：
+**1) 建目录、放空录音占位、造数据**：
 
 ```powershell
+# 产物目录不会自动建父目录，先建好
+New-Item -ItemType Directory -Force -Path ..\..\repro\work\data, ..\..\repro\work\cache, ..\..\repro\work\judges, ..\..\repro\work\runs, ..\..\repro\work\gen_test | Out-Null
+
+# 这条链路只练 t2i，不需要真录音；encode.py 仍会读 voice.npz 的标签，所以先放一份 0 条的空占位
+python -c "import numpy as np; np.savez(r'..\..\repro\work\data\voice.npz', wav=np.zeros((0, 49920), 'float32'), animal=np.zeros(0, 'int64'), voice=np.zeros(0, '<U5'), test=np.zeros(0, bool), name=np.zeros(0, '<U18'))"
+
+# 世界图与视频，训练 / 测试用不同种子
 python data.py world ..\..\repro\work\data\world_test.npz   2000  500 900000000
 python data.py world ..\..\repro\work\data\world_train.npz 60000 10000 0
 ```
+
+> 换成 t2a 时，用本地 86.3 MB 的基线 `voice.npz`（432 条）覆盖这份空占位；该文件不入库，需自备。
 
 **2) 训练判卷器**：
 
