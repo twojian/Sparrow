@@ -9,6 +9,8 @@
 !/code/
 !/repro/
 
+/code/t2a/weights/
+
 # 本机环境与第三方权重目录(顶层已被 /* 挡住,这里保留作双保险)
 /.venv-sparrow/
 
